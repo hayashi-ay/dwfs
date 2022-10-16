@@ -1,0 +1,71 @@
+services:
+  nginx:
+    build:
+      context: ./nginx
+    volumes:
+      - "website:${WP_PATH}"
+      - ./nginx/ssl/:/etc/nginx/ssl/
+    ports:
+      - "443:443"
+    networks:
+      - main-net
+    restart: on-failure
+    environment:
+      - WP_PATH
+    depends_on:
+      - wordpress
+  wordpress:
+    build:
+      context: ./wordpress
+      args:
+        - "WP_PATH=${WP_PATH}"
+    volumes:
+      - "website:${WP_PATH}"
+    networks:
+      - main-net
+    restart: on-failure
+    environment:
+      - DB_NAME
+      - DB_USER
+      - DB_PASS
+      - WP_PATH
+      - WP_URL
+      - WP_TITLE
+      - WP_ADMIN_USER
+      - WP_ADMIN_PASS
+      - WP_ADMIN_EMAIL
+      - WP_EDITOR_USER
+      - WP_EDITOR_EMAIL
+      - WP_EDITOR_PASS
+    depends_on:
+      - mariadb
+  mariadb:
+    build:
+      context: ./mariadb
+    volumes:
+      - database:/var/lib/mysql
+    networks:
+      - main-net
+    restart: on-failure
+    environment:
+      - DB_NAME
+      - DB_USER
+      - DB_PASS
+      - DB_ROOT_PASS
+
+volumes:
+  website:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "${VOLUME_PATH}/website"
+  database:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "${VOLUME_PATH}/database"
+
+networks:
+  main-net:

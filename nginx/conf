@@ -1,0 +1,32 @@
+upstream php-fpm {
+    server wordpress:9000;
+}
+
+server {
+    server_name local.hayapenguin.com;
+    listen 443 ssl;
+    ssl_certificate /etc/nginx/ssl/server.cert;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    index index.php index.html;
+
+    root /var/www/html;
+
+    location ~ [^/]\.php(/|$) {
+        fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+        if (!-f $document_root$fastcgi_script_name) {
+            return 404;
+        }
+
+        fastcgi_pass php-fpm;
+        fastcgi_index index.php;
+
+        # Sets parameters that should be passed to the FastCGI server.
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root/$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+
+        # Mitigate https://httpoxy.org/ vulnerabilities.
+        fastcgi_param HTTP_PROXY "";
+    }
+}
