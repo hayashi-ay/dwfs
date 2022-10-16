@@ -14,6 +14,8 @@ down:
 clean:
 	# ignore the exit status of the following commands
 	# https://www.gnu.org/software/make/manual/make.html#Errors-in-Recipes
+	# use Secondary Expansion
+	# https://www.gnu.org/software/make/manual/make.html#Secondary-Expansion
 	-docker stop $$(docker ps -qa)
 	-docker rm $$(docker container ls -qa)
 	-docker image rm $$(docker image ls -qa)
